@@ -9,6 +9,6 @@ $factory->define(Category::class, function (Faker $faker) {
     return [
         'name' => $faker->name(),
         'description' => rand(1,10) % 2 == 0 ? $faker->sentence:null,
-        'is_active' => rand(0,1) == 1
+        'is_active' => rand(0,4) == 1
     ];
 });

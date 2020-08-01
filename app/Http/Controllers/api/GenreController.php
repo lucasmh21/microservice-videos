@@ -27,8 +27,8 @@ class GenreController extends Controller
      */
     public function store(Request $request)
     {
-        $rules['name'] = 'required|unique:genres,name|max:255';
-        $this->validateGenre($request, $rules);
+        $this->rules['name'] = 'required|unique:genres,name|max:255|string';
+        $this->validateGenre($request, $this->rules);
         return Genre::create($request->all());
     }
 
@@ -52,8 +52,8 @@ class GenreController extends Controller
      */
     public function update(Request $request, Genre $genre)
     {
-        $rules['name'] = "required|unique:genres,name,{$genre->id}|max:255";
-        $this->validateGenre($request, $rules);
+        $this->rules['name'] = "required|unique:genres,name,{$genre->id}|max:255|string";
+        $this->validateGenre($request, $this->rules);
         $genre->update($request->all());
         return $genre;
     }

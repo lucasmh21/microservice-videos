@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\Feature;
+namespace Tests\Feature\Models;
 
 use App\Models\Genre;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
@@ -17,8 +17,6 @@ class GenreTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $faker = $this->setUpFaker();
-        $genre = new Genre();
     }
 
     /**

@@ -9,7 +9,7 @@ use App\Http\Controllers\Controller;
 class CategoryController extends Controller
 {
     protected $rules = [
-        'description' => 'max:255',
+        'description' => 'max:255|string',
         'is_active' => 'boolean'
     ];
     /**
@@ -30,8 +30,8 @@ class CategoryController extends Controller
      */
     public function store(Request $request)
     {
-        $rules['name'] = "required|max:255|unique:categories,name";
-        $this->validateCategory($request, $rules);
+        $this->rules['name'] = "required|max:255|unique:categories,name|string";
+        $this->validateCategory($request, $this->rules);
         return Category::create($request->all());
     }
 
@@ -55,8 +55,8 @@ class CategoryController extends Controller
      */
     public function update(Request $request, Category $category)
     {
-        $rules['name'] = "required|max:255|unique:categories,name,{$category->id}";
-        $this->validateCategory($request, $rules);
+        $this->rules['name'] = "required|string|max:255|unique:categories,name,{$category->id}";
+        $this->validateCategory($request, $this->rules);
         $category->update($request->all());
         return $category;
     }
