@@ -5,7 +5,7 @@ steps:
 
 - id: Rodando o docker composer
   name: 'gcr.io/$PROJECT_ID/docker-compose'
-  args: ['-f', 'docker-compose.yaml','logs']
+  args: ['logs']
 
 - id: "Rodando docker ps"
   name: 'gcr.io/cloud-builders/docker'
