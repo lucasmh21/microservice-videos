@@ -6,13 +6,13 @@ use App\Traits\Uuid;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class Genre extends Model
+class CastMember extends Model
 {
-    use Uuid;
     use SoftDeletes;
+    use Uuid;
 
-    protected $fillable = ['name', 'is_active'];
-    protected $casts = ['id' => 'string',
-                        'is_active' => 'boolean'];
+    public const TYPE_VALUES = [1 => 'Director', 2 => 'Actor'];
+    protected $fillable = ['name','type'];
+    protected $casts = ['id' => 'string'];
     public $incrementing = false;
 }

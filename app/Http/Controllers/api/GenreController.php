@@ -4,74 +4,31 @@ namespace App\Http\Controllers\api;
 
 use App\Models\Genre;
 use Illuminate\Http\Request;
-use App\Http\Controllers\Controller;
 
-class GenreController extends Controller
+class GenreController extends AbstractBasicCrudController
 {
-    protected $rules = ['is_active' => 'boolean'];
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function index()
+    private $rules = ['is_active' => 'boolean'];
+    private const RULE_NAME = 'required|max:255|string|unique:genres,name';
+
+    protected function model()
     {
-        return Genre::all();
+        return Genre::class;
     }
 
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
+    protected function rules()
+    {
+        return $this->rules;
+    }
+
     public function store(Request $request)
     {
-        $this->rules['name'] = 'required|unique:genres,name|max:255|string';
-        $this->validateGenre($request, $this->rules);
-        return Genre::create($request->all());
+        $this->rules['name'] = self::RULE_NAME;
+        return parent::store($request);
     }
 
-    /**
-     * Display the specified resource.
-     *
-     * @param  \App\Models\Genre  $genre
-     * @return \Illuminate\Http\Response
-     */
-    public function show(Genre $genre)
+    public function update(Request $request, $id)
     {
-        return $genre;
-    }
-
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\Genre  $genre
-     * @return \Illuminate\Http\Response
-     */
-    public function update(Request $request, Genre $genre)
-    {
-        $this->rules['name'] = "required|unique:genres,name,{$genre->id}|max:255|string";
-        $this->validateGenre($request, $this->rules);
-        $genre->update($request->all());
-        return $genre;
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  \App\Models\Genre  $genre
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy(Genre $genre)
-    {
-        $genre->delete();
-        return response()->noContent();
-    }
-
-    private function validateGenre(Request $request, $rules)
-    {
-        $request->validate($rules);
+        $this->rules['name'] = self::RULE_NAME.",{$id}";
+        return parent::update($request, $id);
     }
 }

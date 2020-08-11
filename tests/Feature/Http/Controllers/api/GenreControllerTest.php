@@ -6,57 +6,75 @@ use App\Models\Genre;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Illuminate\Support\Facades\Lang;
 use Tests\TestCase;
+use Tests\Traits\ValidationTrait;
 
 class GenreControllerTest extends TestCase
 {
     use DatabaseMigrations;
+    use ValidationTrait;
+
+    protected function model()
+    {
+        return Genre::class;
+    }
+
+    protected function routeStore()
+    {
+        return route('genres.store');
+    }
+
+    protected function routeUpdate(array $parameters)
+    {
+        return route('genres.update',['genre' => $parameters['id']]);
+    }
+
+    protected function routeDelete(array $parameters)
+    {
+        return route('genres.destroy',['genre' => $parameters['id']]);
+    }
+
+    protected function routeShow(array $parameters)
+    {
+        return route('genres.show',['genre' => $parameters['id']]);
+    }
+
+    protected function getTestCase(): TestCase
+    {
+        return $this;
+    }
 
     public function testCreate()
     {
         $data = [
             'name' => 'Test',
         ];
-        $response = $this->json('POST', route('genres.store'), $data);
-        $response->assertStatus(201)
-                 ->assertJson($data)
-                 ->assertJsonMissingValidationErrors('is_active');
+        $this->assertCreate($data)
+             ->assertJsonMissingValidationErrors('is_active');
     }
 
     public function testUpdate()
     {
-        $genre = factory(\App\Models\Genre::class)->create();
         $data = [
             'name' => 'NewName',
             'is_active' => false
         ];
-        $response = $this->json('PUT', route('genres.update', ['genre' => $genre->id]), $data);
-        $response->assertStatus(200)
-                 ->assertJson($data);
+        $this->assertUpdate($data);
     }
 
     public function testDelete()
     {
-        $genre = factory(\App\Models\Genre::class)->create();
-        $response = $this->json('DELETE', route('genres.destroy',['genre' => $genre->id]));
-        $response->assertStatus(204);
+        $this->assertDestroy();
     }
 
 
     public function testIndex()
     {
-        $genre = new Genre();
-        factory(\App\Models\Genre::class,10)->create();
-        $response = $this->get(route('genres.index'));
-        $response->assertStatus(200)
-                 ->assertJson($genre->toArray());
+        $this->assertIndex(route('genres.index'));
     }
 
     public function testShow()
     {
-        $genre = factory(\App\Models\Genre::class)->create();
-        $response = $this->get(route('genres.show', ['genre' => $genre->id]));
-        $response->assertStatus(200)
-                 ->assertJson($genre->toArray());
+        $this->assertShow();
     }
 
     public function testInvalidData()
@@ -86,18 +104,8 @@ class GenreControllerTest extends TestCase
 
     public function checkEmptyFields()
     {
-        $data = ['name' => ''];
-        $validEmptyField = function($method, $route, $data){
-            $response = $this->json($method, $route, $data);
-            $response->assertStatus(422)
-                     ->assertJsonFragment([
-                         Lang::get('validation.required',['attribute' => 'name'])
-                     ])
-                     ->assertJsonMissingValidationErrors('is_active');
-        };
-        $validEmptyField('POST', route('genres.store'), $data);
-        $genre = factory(\App\Models\Genre::class)->create();
-        $validEmptyField('PUT', route('genres.update',['genre' => $genre->id]), $data);
+        $this->assertEmptyFieldsStore(['name'],['is_active']);
+        $this->assertEmptyFieldsUpdate(['name'],['is_active']);
     }
 
     public function checkWrongData()
@@ -123,17 +131,7 @@ class GenreControllerTest extends TestCase
 
     public function checkDuplicate()
     {
-        $data = ['name' => 'test'];
-        $validDuplicate = function ($method, $route, $data){
-            $response = $this->json($method, $route, $data);
-            $response->assertStatus(422)
-                     ->assertJsonFragment([
-                         Lang::get('validation.unique',['attribute' => 'name'])
-                     ]);
-        };
-        $this->json('POST', route('genres.store'), $data);
-        $validDuplicate('POST', route('genres.store'), $data);
-        $genre = factory(\App\Models\Genre::class)->create();
-        $validDuplicate('PUT', route('genres.update',['genre' => $genre->id]),$data);
+        $this->assertDuplicateStore(['name']);
+        $this->assertDuplicateUpdate(['name']);
     }
 }

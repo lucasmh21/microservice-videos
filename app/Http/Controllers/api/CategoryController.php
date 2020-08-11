@@ -4,77 +4,36 @@ namespace App\Http\Controllers\api;
 
 use App\Models\Category;
 use Illuminate\Http\Request;
-use App\Http\Controllers\Controller;
 
-class CategoryController extends Controller
+class CategoryController extends AbstractBasicCrudController
 {
-    protected $rules = [
+
+    private const RULE_NAME = 'required|max:255|string|unique:categories,name';
+
+    private $rules = [
         'description' => 'max:255|string',
-        'is_active' => 'boolean'
+        'is_active' => 'boolean',
     ];
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function index()
+
+    protected function model()
     {
-        return Category::all();
+        return Category::class;
     }
 
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
+    protected function rules()
+    {
+        return $this->rules;
+    }
+
     public function store(Request $request)
     {
-        $this->rules['name'] = "required|max:255|unique:categories,name|string";
-        $this->validateCategory($request, $this->rules);
-        return Category::create($request->all());
+        $this->rules['name'] = self::RULE_NAME;
+        return parent::store($request);
     }
 
-    /**
-     * Display the specified resource.
-     *
-     * @param  \App\Models\Category  $category
-     * @return \Illuminate\Http\Response
-     */
-    public function show(Category $category)
+    public function update(Request $request, $id)
     {
-        return $category;
-    }
-
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\Category  $category
-     * @return \Illuminate\Http\Response
-     */
-    public function update(Request $request, Category $category)
-    {
-        $this->rules['name'] = "required|string|max:255|unique:categories,name,{$category->id}";
-        $this->validateCategory($request, $this->rules);
-        $category->update($request->all());
-        return $category;
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  \App\Models\Category  $category
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy(Category $category)
-    {
-        $category->delete();
-        return response()->noContent();
-    }
-
-    private function validateCategory(Request $request, $rules)
-    {
-        $request->validate($rules);
+        $this->rules['name'] = self::RULE_NAME.",{$id}";
+        return parent::update($request, $id);
     }
 }

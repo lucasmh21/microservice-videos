@@ -2,17 +2,49 @@
 
 namespace Tests\Feature\Http\Controllers\api;
 
+use App;
 use App\Models\Category;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Support\Facades\Lang;
 use Ramsey\Uuid\Uuid;
 use Tests\TestCase;
+use Tests\Traits\ValidationTrait;
 
 class CategoryControllerTest extends TestCase
 {
+    use ValidationTrait;
     use DatabaseMigrations;
     use WithFaker;
+
+    protected function routeDelete(array $parameters)
+    {
+        return route('categories.destroy',['category'=>$parameters['id']]);
+    }
+
+    protected function routeShow(array $parameters)
+    {
+        return route('categories.show',['category'=>$parameters['id']]);
+    }
+
+    protected function routeStore()
+    {
+        return route('categories.store');
+    }
+
+    protected function routeUpdate(array $parameters)
+    {
+        return route('categories.update',['category' => $parameters['id']]);
+    }
+    protected function getTestCase(): TestCase
+    {
+        return $this;
+    }
+
+    protected function model()
+    {
+        return Category::class;
+    }
 
     protected function setUp(): void
     {
@@ -20,13 +52,9 @@ class CategoryControllerTest extends TestCase
         parent::setUp();
     }
 
-
     public function testCreate()
     {
-        $data = ['name' => 'Test'];
-        $response = $this->post(route('categories.store'), $data);
-        $response->assertStatus(201)
-                ->assertJson($data, true);
+        $response = $this->assertCreate(['name' => 'Test']);
         $this->assertTrue(Uuid::isValid($response->json('id')));
     }
 
@@ -37,33 +65,23 @@ class CategoryControllerTest extends TestCase
             'is_active' => false,
             'description' => 'Some description'
         ];
-        $category = factory(\App\Models\Category::class)->create(['name' => 'Test']);
-        $response = $this->put(route('categories.update',['category' => $category->id]), $data);
-        $response->assertStatus(200)
-                 ->assertJson($data);
+        $this->assertUpdate($data);
     }
 
     public function testIndex()
     {
-        factory(\App\Models\Category::class,10)->create();
-        $response = $this->get(route('categories.index'));
-        $response->assertJson($this->category->toArray());
+        $this->assertIndex(route('categories.index'));
     }
 
     public function testShow()
     {
-        $data = ['name' => 'test'];
-        $id = $this->json('POST', route('categories.store'), $data)->json('id');
-        $response = $this->json('GET',route('categories.show',['category' => $id]));
-        $response->assertJson($data, true);
+        $this->assertShow();
     }
 
     /** @test */
     public function testDestroy()
     {
-        $id = $this->createGenericCategory();
-        $response = $this->json('DELETE', route('categories.destroy',['category' => $id]));
-        $response->assertStatus(204);
+        $this->assertDestroy();
     }
 
 
@@ -77,23 +95,8 @@ class CategoryControllerTest extends TestCase
 
     private function checkEmptyFieldsValidation()
     {
-        //GENERIC VALIDATION
-        $checkEmptyField = function($method, $route){
-            $response = $this->json($method, $route,['name' => null]);
-            $response->assertJsonFragment([
-                Lang::get('validation.required',['attribute' => 'name'])
-            ]);
-            $response->assertStatus(422)
-                     ->assertJsonMissingValidationErrors('is_active')
-                     ->assertJsonMissingValidationErrors('description');
-            return $response;
-        };
-        //CREATE
-        $checkEmptyField('POST', route('categories.store'));
-
-        //UPDATE
-        $id = $this->createGenericCategory();
-        $checkEmptyField('PUT', route('categories.update',['category' => $id]));
+        $this->assertEmptyFieldsStore(['name'],['is_active', 'description']);
+        $this->assertEmptyFieldsUpdate(['name'],['is_active', 'description']);
     }
 
     private function checkFieldsLimit()
@@ -117,7 +120,7 @@ class CategoryControllerTest extends TestCase
         ];
 
         $validFieldLimit('POST',route('categories.store'), $data);
-        $id = $this->createGenericCategory();
+        $id = $this->createGenericModel();
         $validFieldLimit('PUT',route('categories.update',['category' => $id]), $data);
     }
 
@@ -136,35 +139,13 @@ class CategoryControllerTest extends TestCase
             'is_active' => 'text'
         ];
         $validWrongValues('POST', route('categories.store'), $data);
-        $id = $this->createGenericCategory();
+        $id = $this->createGenericModel();
         $validWrongValues('PUT', route('categories.update',['category' => $id]), $data);
     }
 
     private function checkDuplicateFields()
     {
-        $data = ['name' => 'test'];
-        $response = $this->json('POST',route('categories.store', $data));
-        $validDuplicate = function($method, $route, $data){
-            $response = $this->json($method,$route,$data);
-            $response->assertStatus(422)
-                     ->assertJsonFragment([
-                         Lang::get('validation.unique',['attribute' => 'name'])
-                     ]);
-        };
-        //CREATE
-        $validDuplicate('POST', route('categories.store'), $data);
-
-        //UPDATE
-        $response = $this->json('POST',route('categories.store'),[
-            'name' => 'test2'
-        ]);
-        $id = $response->json('id');
-        $response = $validDuplicate('PUT', route('categories.update',['category' => $id]), $data);
-    }
-
-    private function createGenericCategory(){
-        $response = $this->json('POST', route('categories.store'),['name' => $this->faker()->name()]);
-        $response->assertStatus(201);
-        return $response->json('id');
+        $this->assertDuplicateStore(['name']);
+        $this->assertDuplicateUpdate(['name']);
     }
 }
