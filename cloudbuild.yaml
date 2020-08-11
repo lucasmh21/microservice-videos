@@ -5,16 +5,16 @@ steps:
 
 - id: "Rodando o composer"
   name: 'gcr.io/cloud-builders/docker'
-  args: ['exec','-t', 'app', 'composer','install']
+  args: ['exec','-t', 'micro-videos-app', 'composer','install']
 
 - id: "Key generate"
   name: 'gcr.io/cloud-builders/docker'
-  args: ['exec','-t', 'app', 'php','artisan','key:generate']
+  args: ['exec','-t', 'micro-videos-app', 'php','artisan','key:generate']
 
 - id: "Migrations"
   name: 'gcr.io/cloud-builders/docker'
-  args: ['exec','-t', 'app', 'php','artisan','migrate']
+  args: ['exec','-t', 'micro-videos-app', 'php','artisan','migrate']
 
 - id: "PHP Unit"
   name: 'gcr.io/cloud-builders/docker'
-  args: ['exec','-t', 'app', 'php','/var/www/vendor/bin/phpunit','-c','/var/www/phpunit.xml']
+  args: ['exec','-t', 'micro-videos-app', 'php','/var/www/vendor/bin/phpunit','-c','/var/www/phpunit.xml']
