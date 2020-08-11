@@ -3,8 +3,6 @@
 /public/storage
 /storage/*.key
 /vendor
-.env
-.env.backup
 .phpunit.result.cache
 Homestead.json
 Homestead.yaml
@@ -17,5 +15,4 @@ yarn-error.log
 .devcontainer/
 _ide_helper.php
 _ide_helper_models.php
-.env.testing
 micro-service.code-workspace
