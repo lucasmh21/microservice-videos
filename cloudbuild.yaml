@@ -1,7 +1,7 @@
 steps:
 - id: Rodando o docker composer
   name: 'gcr.io/$PROJECT_ID/docker-compose'
-  args: ['-f', 'docker-compose.yaml','up','-d', '--build']
+  args: ['-f', 'docker-compose.yaml','up','-d']
 
 - id: Rodando logs
   name: 'gcr.io/$PROJECT_ID/docker-compose'
