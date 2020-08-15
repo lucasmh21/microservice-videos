@@ -3,14 +3,6 @@ steps:
   name: 'gcr.io/$PROJECT_ID/docker-compose'
   args: ['-f', 'docker-compose.yaml','up','-d']
 
-- id: Rodando logs
-  name: 'gcr.io/$PROJECT_ID/docker-compose'
-  args: ['logs', 'app']
-
-- id: "Rodando docker ps"
-  name: 'gcr.io/cloud-builders/docker'
-  args: ['ps']
-
 - id: "Rodando o composer"
   name: 'gcr.io/cloud-builders/docker'
   args: ['exec','-t', 'micro-videos-app', 'composer','install']
