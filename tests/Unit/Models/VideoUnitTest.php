@@ -8,7 +8,7 @@ use PHPUnit\Framework\TestCase;
 class VideoUnitTest extends TestCase
 {
 
-    private Video $video;
+    private $video;
 
     protected function setUp(): void
     {
@@ -48,5 +48,4 @@ class VideoUnitTest extends TestCase
         $this->assertEqualsCanonicalizing($dates, $this->video->getDates());
         $this->assertCount(sizeof($dates), $this->video->getDates());
     }
-
 }
