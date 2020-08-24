@@ -42,7 +42,7 @@ class CategoryUnitTest extends TestCase
     {
         return [
             'name' => $this->faker->name,
-            'description' => rand (0,4) < 4 ? $this->faker->sentence:null,
+            'description' => $this->faker->sentence,
             'is_active' => rand(0,4) > 0];
     }
 }
