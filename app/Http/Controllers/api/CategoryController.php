@@ -15,25 +15,20 @@ class CategoryController extends AbstractBasicCrudController
         'is_active' => 'boolean',
     ];
 
-    protected function model()
+    protected function rulesStore()
     {
-        return Category::class;
-    }
-
-    protected function rules()
-    {
+        $this->rules['name'] = self::RULE_NAME;
         return $this->rules;
     }
 
-    public function store(Request $request)
+    protected function rulesUpdate(string $id)
     {
-        $this->rules['name'] = self::RULE_NAME;
-        return parent::store($request);
+        $this->rules['name'] = self::RULE_NAME.','.$id;
+        return $this->rules;
     }
 
-    public function update(Request $request, $id)
+    protected function model()
     {
-        $this->rules['name'] = self::RULE_NAME.",{$id}";
-        return parent::update($request, $id);
+        return Category::class;
     }
 }

@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Http\Controllers\api;
 
+use App\Models\Category;
 use App\Models\Genre;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Illuminate\Support\Facades\Lang;
@@ -47,8 +48,9 @@ class GenreControllerTest extends TestCase
     {
         $data = [
             'name' => 'Test',
+            'categories_id' => [factory(Category::class)->create()->id]
         ];
-        $this->assertCreate($data)
+        $this->assertCreate($data,['categories_id' =>'categories'])
              ->assertJsonMissingValidationErrors('is_active');
     }
 
@@ -56,9 +58,10 @@ class GenreControllerTest extends TestCase
     {
         $data = [
             'name' => 'NewName',
-            'is_active' => false
+            'is_active' => false,
+            'categories_id' => [factory(Category::class)->create()->id]
         ];
-        $this->assertUpdate($data);
+        $this->assertUpdate($data,['categories_id' =>'categories']);
     }
 
     public function testDelete()
@@ -133,5 +136,13 @@ class GenreControllerTest extends TestCase
     {
         $this->assertDuplicateStore(['name']);
         $this->assertDuplicateUpdate(['name']);
+    }
+
+    protected function createGenericModel()
+    {
+        /** @var Genre $model */
+        $model = factory($this->model())->create();
+        $model->categories()->saveMany(factory(Category::class,rand(1,3)));
+        return $model;
     }
 }

@@ -4,6 +4,7 @@ namespace Tests\Traits;
 
 use Illuminate\Foundation\Testing\TestResponse;
 use Illuminate\Support\Facades\Lang;
+use ReflectionClass;
 use Tests\TestCase;
 
 trait ValidationTrait
@@ -15,20 +16,28 @@ trait ValidationTrait
     abstract protected function routeShow(array $parameters);
     abstract protected function getTestCase(): TestCase;
 
-    protected function assertCreate(array $data)
+    protected function assertCreate(array $data, array $relationships = [])
     {
         $response = $this->getTestCase()->json('POST',$this->routeStore(), $data);
-        $response->assertStatus(201)
-                 ->assertJson($data);
+        $response->assertStatus(201);
+        $this->assertRelationships($response, $data, $relationships);
+        $response->assertJson($data);
         return $response;
     }
 
-    protected function assertUpdate(array $data)
+    protected function assertUpdate(array $data, array $relationships = [])
     {
         $modelObject = $this->createGenericModel();
-        $response = $this->getTestCase()->json('PUT',$this->routeUpdate($modelObject->toArray()),$data);
-        $response->assertStatus(200)
-                 ->assertJson($data);
+        $arrayObject = $modelObject->toArray();
+
+        foreach ($data as $key => $value) {
+            $arrayObject[$key] = $value;
+        }
+
+        $response = $this->getTestCase()->json('PUT',$this->routeUpdate($modelObject->toArray()),$arrayObject);
+        $response->assertStatus(200);
+        $this->assertRelationships($response, $data, $relationships);
+        $response->assertJson($data);
         return $response;
     }
 
@@ -38,6 +47,7 @@ trait ValidationTrait
         factory($this->model(),10)->create();
         $response = $this->getTestCase()->get($route);
         $response->assertJson((new $model)->toArray());
+        return $response;
     }
 
     protected function assertShow()
@@ -45,6 +55,7 @@ trait ValidationTrait
         $model = $this->createGenericModel();
         $response = $this->json('GET',$this->routeShow($model->toArray()));
         $response->assertJson($model->toArray(), true);
+        return $response;
     }
 
     protected function assertDestroy()
@@ -52,6 +63,7 @@ trait ValidationTrait
         $model = $this->createGenericModel();
         $response = $this->json('DELETE', $this->routeDelete($model->toArray()));
         $response->assertStatus(204);
+        return $response;
     }
 
     protected function assertEmptyFieldsStore(array $requiredFields, array $optionalFields = null)
@@ -151,8 +163,30 @@ trait ValidationTrait
         return $result;
     }
 
-    private function createGenericModel()
+    protected function createGenericModel()
     {
         return factory($this->model())->create();
+    }
+
+    protected function assertRelationships(TestResponse $response, array &$data, array $relationships)
+    {
+        $id = $response->json('id');
+        $model = $this->model()::find($id);
+        $testCase = $this->getTestCase();
+
+        $reflection = new ReflectionClass($this->model());
+        foreach ($relationships as $field => $name) {
+            $method = $reflection->getMethod($name);
+            $arrayRelationship = array_map(function($array){
+                return $array['id'];
+            },$method->invoke($model)->get()->toArray());
+            $testCase->assertEquals($arrayRelationship,$data[$field]);
+        }
+
+        $relationShipFields = array_keys($relationships);
+
+        foreach ($relationShipFields as $fieldName) {
+            unset($data[$fieldName]); //Remove os relacionamentos para fazer assert do Json como o $data recebido
+        }
     }
 }

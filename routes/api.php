@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Route;
 
 /*
 |--------------------------------------------------------------------------
@@ -22,4 +23,5 @@ Route::group(['namespace' => 'api'], function () {
     Route::resource('categories', 'CategoryController')->except(['create','edit']);
     Route::resource('genres', 'GenreController')->except(['create','edit']);
     Route::resource('cast_members', 'CastMemberController')->except(['create', 'edit']);
+    Route::resource('videos', 'VideoController')->except(['create', 'edit']);
 });

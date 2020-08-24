@@ -8,7 +8,8 @@ use Illuminate\Http\Request;
 abstract class AbstractBasicCrudController extends Controller
 {
     protected abstract function model();
-    protected abstract function rules();
+    protected abstract function rulesStore();
+    protected abstract function rulesUpdate(string $id);
 
     public function index()
     {
@@ -17,7 +18,7 @@ abstract class AbstractBasicCrudController extends Controller
 
     public function store(Request $request)
     {
-        $validData = $request->validate($this->rules());
+        $validData = $request->validate($this->rulesStore());
         return $this->model()::create($validData);
     }
 
@@ -29,7 +30,7 @@ abstract class AbstractBasicCrudController extends Controller
     public function update(Request $request, $id)
     {
         $object = $this->findOrFail($id);
-        $validData = $request->validate($this->rules());
+        $validData = $request->validate($this->rulesUpdate($id));
         $object->update($validData);
         return $object;
     }
@@ -41,7 +42,7 @@ abstract class AbstractBasicCrudController extends Controller
         return response()->noContent();
     }
 
-    private function findOrFail($id)
+    protected function findOrFail($id)
     {
         $model = $this->model();
         $keyName =  (new $model)->getRouteKeyName();
