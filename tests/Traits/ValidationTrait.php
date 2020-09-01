@@ -28,7 +28,7 @@ trait ValidationTrait
     protected function assertUpdate(array $data, array $relationships = [])
     {
         $modelObject = $this->createGenericModel();
-        $arrayObject = $modelObject->toArray();
+        $arrayObject = $this->removeEmpty($modelObject->toArray());
 
         foreach ($data as $key => $value) {
             $arrayObject[$key] = $value;
@@ -188,5 +188,11 @@ trait ValidationTrait
         foreach ($relationShipFields as $fieldName) {
             unset($data[$fieldName]); //Remove os relacionamentos para fazer assert do Json como o $data recebido
         }
+    }
+
+    private function removeEmpty($array) {
+        return array_filter($array, function ($value) {
+            return !empty($value) || $value === 0;
+        });
     }
 }

@@ -21,7 +21,8 @@ class VideoController extends AbstractBasicCrudController
             'rating' => 'required|string|max:3',
             'duration' => 'required|integer',
             'categories_id' => 'required|array|exists:categories,id',
-            'genres_id' => ['required','array','exists:genres,id']
+            'genres_id' => ['required','array','exists:genres,id'],
+            'video_file' => 'mimetypes:video/mp4|max:40960'
         ];
     }
 
@@ -32,12 +33,8 @@ class VideoController extends AbstractBasicCrudController
         array_push($rules['genres_id'],new GenreCategoryRelationship($request->get('categories_id')));
         $validData = $request->validate($rules);
 
-
         /** @var Video $obj */
         $obj = $this->model()::create($validData);
-        $obj->categories()->sync($request->get('categories_id'));
-        $obj->genres()->sync($request->get('genres_id'));
-        $obj->refresh();
         return $obj;
     }
 

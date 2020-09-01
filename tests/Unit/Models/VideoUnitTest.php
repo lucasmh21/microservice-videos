@@ -19,7 +19,7 @@ class VideoUnitTest extends TestCase
 
     public function testFillable()
     {
-        $fillable = ['description','title', 'year_launched', 'opened', 'rating', 'duration'];
+        $fillable = ['description','title', 'year_launched', 'opened', 'rating', 'duration', 'video_file'];
         $this->assertEqualsCanonicalizing($this->video->getFillable(), $fillable);
         $this->assertCount(sizeof($fillable),$this->video->getFillable());
     }

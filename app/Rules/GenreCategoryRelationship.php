@@ -16,9 +16,15 @@ class GenreCategoryRelationship implements Rule
 
     public function passes($attribute, $value)
     {
-        $result = DB::table('category_genre')->whereIn('category_id',$this->categories)
-                    ->where('genre_id','=',$value)->get()->toArray();
-        return sizeof($result) != 0;
+        $genres = array_unique($value);
+        foreach ($genres as $genre_id) {
+            $result = DB::table('category_genre')->whereIn('category_id',$this->categories)
+            ->where('genre_id','=',$genre_id)->get()->toArray();
+            if (sizeof($result) == 0){
+                return false;
+            }
+        }
+        return true;
     }
 
     public function message()

@@ -6,6 +6,8 @@ use App\Models\Category;
 use App\Models\Genre;
 use App\Models\Video;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Lang;
 use Tests\TestCase;
 use Tests\Traits\ValidationTrait;
 
@@ -68,9 +70,11 @@ class VideoControllerTest extends TestCase
             'rating' => '18',
             'duration' => 60,
             'categories_id' => [$category->id],
-            'genres_id' => [$genre->id]
+            'genres_id' => [$genre->id],
+            'video_file' => UploadedFile::fake()->create('fileTest1',rand(1,40960),'video/mp4')
         ];
-        return $this->assertCreate($data,['categories_id' => 'categories', 'genres_id' =>'genres']);
+        $this->assertCreate($data,['categories_id' => 'categories', 'genres_id' =>'genres']);
+
     }
 
     public function testUpdate()
@@ -137,7 +141,75 @@ class VideoControllerTest extends TestCase
         );
     }
 
+    public function testVideoFileMymetypeValidation()
+    {
+        $category = factory(Category::class)->create();
+        /** @var Genre $genre */
+        $genre = factory(Genre::class)->create();
+        $genre->categories()->save($category);
+        $data = [
+            'title' => 'The Witcher EP 1 Temp 1',
+            'description' => 'Nois que avoa bruxao',
+            'year_launched' => 2019,
+            'opened' => true,
+            'rating' => '18',
+            'duration' => 60,
+            'categories_id' => [$category->id],
+            'genres_id' => [$genre->id],
+            'video_file' => UploadedFile::fake()->create('fileTest1',rand(1,40960),'video/mp8')
+        ];
+        $response = $this->json('POST',$this->routeStore(),$data);
+        $response->assertStatus(422);
+        $response->assertJsonValidationErrors([
+            'video_file'=> Lang::get('validation.mimetypes',['attribute' => 'video file','values' => 'video/mp4'])
+        ]);
+    }
     /** @test */
+    public function testVideoFileSize()
+    {
+        $category = factory(Category::class)->create();
+        /** @var Genre $genre */
+        $genre = factory(Genre::class)->create();
+        $genre->categories()->save($category);
+        $data = [
+            'title' => 'The Witcher EP 1 Temp 1',
+            'description' => 'Nois que avoa bruxao',
+            'year_launched' => 2019,
+            'opened' => true,
+            'rating' => '18',
+            'duration' => 60,
+            'categories_id' => [$category->id],
+            'genres_id' => [$genre->id],
+            'video_file' => UploadedFile::fake()->create('fileTest1',40961,'video/mp8')
+        ];
+        $response = $this->json('POST',$this->routeStore(),$data);
+        $response->assertStatus(422);
+        $response->assertJsonValidationErrors([
+            'video_file'=> Lang::get('validation.max.file',['attribute' => 'video file','max' => 40960])
+        ]);
+    }
+
+    public function testVideoStoreWithoutFile()
+    {
+        /** @var Category $category */
+        $category = factory(Category::class)->create();
+        /** @var Genre $genre */
+        $genre = factory(Genre::class)->create();
+        $genre->categories()->save($category);
+        $data = [
+            'title' => 'The Witcher EP 1 Temp 1',
+            'description' => 'Nois que avoa bruxao',
+            'year_launched' => 2019,
+            'opened' => true,
+            'rating' => '18',
+            'duration' => 60,
+            'categories_id' => [$category->id],
+            'genres_id' => [$genre->id]
+        ];
+        $this->assertCreate($data,['categories_id' => 'categories', 'genres_id' =>'genres']);
+    }
+
+
     public function testGenreRelationship()
     {
         $this->verifyGenreRelationshipStore();

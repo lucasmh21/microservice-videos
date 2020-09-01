@@ -7,7 +7,7 @@ use Faker\Generator as Faker;
 
 $factory->define(Genre::class, function (Faker $faker) {
     return [
-        'name' => $faker->jobTitle,
+        'name' => $faker->name,
         'is_active' => rand(0,2) % 2 == 0
     ];
 });
