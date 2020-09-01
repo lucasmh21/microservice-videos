@@ -20,7 +20,6 @@ class VideoControllerTest extends TestCase
     {
         return Video::class;
     }
-
     protected function routeStore()
     {
         return route('videos.store');
