@@ -3,6 +3,7 @@
 namespace Tests\Traits;
 
 use Illuminate\Foundation\Testing\TestResponse;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Lang;
 use ReflectionClass;
 use Tests\TestCase;
@@ -37,6 +38,13 @@ trait ValidationTrait
         $response = $this->getTestCase()->json('PUT',$this->routeUpdate($modelObject->toArray()),$arrayObject);
         $response->assertStatus(200);
         $this->assertRelationships($response, $data, $relationships);
+
+        foreach ($data as $key => $value) {
+            if($value instanceof UploadedFile){
+               $data[$key] = $value->hashName();
+            }
+        }
+
         $response->assertJson($data);
         return $response;
     }

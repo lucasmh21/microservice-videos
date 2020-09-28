@@ -15,8 +15,20 @@ class Video extends Model
     use SoftDeletes;
     use UploadFilesTrait;
 
+    public $oldFiles = [];
     public $incrementing = false;
-    protected $fillable = ['title', 'description', 'year_launched', 'opened', 'rating', 'duration', 'video_file'];
+    protected $fillable = [
+        'title',
+        'description',
+        'year_launched',
+        'opened',
+        'rating',
+        'duration',
+        'video_file',
+        'thumb_file',
+        'banner_file',
+        'trailer_file'
+    ];
     protected $casts = [
         'opened' => 'boolean',
         'id' => 'string'
@@ -26,6 +38,8 @@ class Video extends Model
         'deleted_at',
         'updated_at'
     ];
+
+
     protected static function storeDir()
     {
         return 'Videos';
@@ -34,7 +48,10 @@ class Video extends Model
     protected static function fileAttributes()
     {
         return [
-            'video_file'
+            'video_file',
+            'thumb_file',
+            'banner_file',
+            'trailer_file'
         ];
     }
 
@@ -52,6 +69,34 @@ class Video extends Model
             if(isset($obj)){
                 $obj->deleteFiles($files);
             }
+            DB::rollback();
+            throw $e;
+        }
+    }
+
+    /**
+     * Update the model in the database.
+     *
+     * @param  array  $attributes
+     * @param  array  $options
+     * @return bool
+     */
+    public function update(array $attributes = [], array $options = [])
+    {
+        try {
+            DB::beginTransaction();
+            $files = Video::extractFiles($attributes);
+            $saved = parent::update($attributes, $options);
+            Video::handleRelations($this, $attributes);
+            if($saved){
+                Video::uploadFiles($files);
+            }
+            DB::commit();
+            if($saved && count($files)){
+                $this->deleteOldFiles();
+            }
+        } catch (Exception $e) {
+            $this->deleteFiles($files);
             DB::rollback();
             throw $e;
         }

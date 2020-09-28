@@ -4,6 +4,7 @@
 
 use App\Models\Video;
 use Faker\Generator as Faker;
+use Illuminate\Http\UploadedFile;
 
 $factory->define(Video::class, function (Faker $faker) {
     return [

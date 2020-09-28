@@ -2,7 +2,9 @@
 
 namespace App\Traits;
 
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Storage;
 
 trait UploadFilesTrait
@@ -10,6 +12,20 @@ trait UploadFilesTrait
 
     protected abstract static function storeDir();
     protected abstract static function fileAttributes();
+
+    public static function bootUploadFilesTrait()
+    {
+        static::updating(function (Model $model){
+            $fieldsUpdated = array_keys($model->getDirty());
+            $filesUpdated = array_intersect($fieldsUpdated, self::fileAttributes());
+            $filesFiltered = Arr::where($filesUpdated, function ($fileField) use ($model) {
+                return $model->getOriginal($fileField);
+            });
+            $model->oldFiles = array_map(function($fileField) use ($model){
+                return $model->getOriginal($fileField);
+            }, $filesFiltered);
+        });
+    }
 
     protected static function uploadFile(UploadedFile $file)
     {
@@ -41,6 +57,10 @@ trait UploadFilesTrait
         foreach ($files as $file) {
             $this->deleteFile($file);
         }
+    }
+
+    protected function deleteOldFiles(){
+        $this->deleteFiles($this->oldFiles);
     }
 
     protected static function extractFiles(&$attributes = [])

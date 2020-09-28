@@ -54,7 +54,18 @@ class VideoControllerTest extends TestCase
     {
         return $this;
     }
-    public function testCreate()
+    public function testCreateWithFiles()
+    {
+        $data = $this->createStoreData();
+        $data['video_file'] = UploadedFile::fake()->create('fileTest1',rand(1,40960),'video/mp4');
+        $this->assertCreate($data,['categories_id' => 'categories', 'genres_id' =>'genres']);
+    }
+    public function testCreateWithBasicFields()
+    {
+        $this->assertCreate($this->createStoreData(),['categories_id' => 'categories', 'genres_id' =>'genres']);
+    }
+
+    private function createStoreData()
     {
         /** @var Category $category */
         $category = factory(Category::class)->create();
@@ -69,15 +80,25 @@ class VideoControllerTest extends TestCase
             'rating' => '18',
             'duration' => 60,
             'categories_id' => [$category->id],
-            'genres_id' => [$genre->id],
-            'video_file' => UploadedFile::fake()->create('fileTest1',rand(1,40960),'video/mp4')
+            'genres_id' => [$genre->id]
         ];
-        $this->assertCreate($data,['categories_id' => 'categories', 'genres_id' =>'genres']);
 
+        return $data;
     }
 
-    public function testUpdate()
+    public function testUpdateWithBasicFields()
     {
+        $this->assertUpdate($this->createUpdateData(),['categories_id' => 'categories', 'genres_id' =>'genres']);
+    }
+
+    public function testUpdateWithFiles()
+    {
+        $data = $this->createUpdateData();
+        $data['video_file'] = UploadedFile::fake()->create('fileTest1',rand(1,40960),'video/mp4');
+        $this->assertUpdate($data,['categories_id' => 'categories', 'genres_id' =>'genres']);
+    }
+
+    private function createUpdateData(){
         /** @var Category $category */
         $category = factory(Category::class)->create();
         /** @var Genre $genre */
@@ -88,7 +109,7 @@ class VideoControllerTest extends TestCase
             'categories_id' => [$category->id],
             'genres_id' => [$genre->id]
         ];
-        $this->assertUpdate($data,['categories_id' => 'categories', 'genres_id' =>'genres']);
+        return $data;
     }
 
     /** @test */
@@ -179,35 +200,14 @@ class VideoControllerTest extends TestCase
             'duration' => 60,
             'categories_id' => [$category->id],
             'genres_id' => [$genre->id],
-            'video_file' => UploadedFile::fake()->create('fileTest1',40961,'video/mp8')
+            'video_file' => UploadedFile::fake()->create('fileTest1',52428801,'video/mp4')
         ];
         $response = $this->json('POST',$this->routeStore(),$data);
         $response->assertStatus(422);
         $response->assertJsonValidationErrors([
-            'video_file'=> Lang::get('validation.max.file',['attribute' => 'video file','max' => 40960])
+            'video_file'=> Lang::get('validation.max.file',['attribute' => 'video file','max' => 52428800])
         ]);
     }
-
-    public function testVideoStoreWithoutFile()
-    {
-        /** @var Category $category */
-        $category = factory(Category::class)->create();
-        /** @var Genre $genre */
-        $genre = factory(Genre::class)->create();
-        $genre->categories()->save($category);
-        $data = [
-            'title' => 'The Witcher EP 1 Temp 1',
-            'description' => 'Nois que avoa bruxao',
-            'year_launched' => 2019,
-            'opened' => true,
-            'rating' => '18',
-            'duration' => 60,
-            'categories_id' => [$category->id],
-            'genres_id' => [$genre->id]
-        ];
-        $this->assertCreate($data,['categories_id' => 'categories', 'genres_id' =>'genres']);
-    }
-
 
     public function testGenreRelationship()
     {

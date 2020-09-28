@@ -5,9 +5,8 @@ use Ramsey\Uuid\Uuid as RamseyUuid;
 
 trait Uuid
 {
-    public static function boot()
+    public static function bootUuid()
     {
-        parent::boot();
         static::creating(function ($model) {
             $model->id = RamseyUuid::uuid4();
         });
