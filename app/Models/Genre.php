@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Http\Resources\GenreResource;
 use App\Traits\Uuid;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -19,5 +20,10 @@ class Genre extends Model
     public function categories()
     {
         return $this->belongsToMany('App\Models\Category');
+    }
+
+    public static function modelResource()
+    {
+        return GenreResource::class;
     }
 }

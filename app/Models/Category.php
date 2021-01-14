@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Http\Resources\CategoryResource;
 use App\Traits\Uuid;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -21,4 +22,9 @@ class Category extends Model
         'updated_at'
     ];
     public $incrementing = false;
+
+    public static function modelResource()
+    {
+        return CategoryResource::class;
+    }
 }

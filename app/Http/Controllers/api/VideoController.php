@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\api;
 
+use App\Http\Resources\VideoResource;
 use App\Models\Video;
 use App\Rules\GenreCategoryRelationship;
 use Illuminate\Http\Request;
@@ -23,7 +24,7 @@ class VideoController extends AbstractBasicCrudController
             'categories_id' => 'required|array|exists:categories,id',
             'genres_id' => ['required','array','exists:genres,id'],
             'video_file' => 'mimetypes:video/mp4|max:52428800',
-            'thumb_file ' => 'max:5120',
+            'thumb_file' => 'max:5120',
             'banner_file' => 'max:10240',
             'trailer_file' => 'max:1048576'
         ];
@@ -38,7 +39,7 @@ class VideoController extends AbstractBasicCrudController
 
         /** @var Video $obj */
         $obj = $this->model()::create($validData);
-        return $obj;
+        return $this->getResource($this->model()::modelResource(), $obj);
     }
 
     public function update(Request $request, $id)
@@ -54,7 +55,7 @@ class VideoController extends AbstractBasicCrudController
         $object->categories()->sync($request->get('categories_id'));
         $object->genres()->sync($request->get('genres_id'));
         $object->refresh();
-        return $object;
+        return $this->getResource($this->model()::modelResource(), $object);
     }
 
     protected function rulesStore()

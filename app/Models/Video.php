@@ -2,12 +2,14 @@
 
 namespace App\Models;
 
+use App\Http\Resources\VideoResource;
 use App\Traits\UploadFilesTrait;
 use App\Traits\Uuid;
 use Exception;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 class Video extends Model
 {
@@ -39,10 +41,9 @@ class Video extends Model
         'updated_at'
     ];
 
-
-    protected static function storeDir()
+    protected function storeDir()
     {
-        return 'Videos';
+        return "Videos/{$this->id}";
     }
 
     protected static function fileAttributes()
@@ -59,10 +60,10 @@ class Video extends Model
     {
         try {
             DB::beginTransaction();
+            $files = Video::extractFiles($attributes);
             $obj = static::query()->create($attributes);
             Video::handleRelations($obj, $attributes);
-            $files = Video::extractFiles($attributes);
-            Video::uploadFiles($files);
+            $obj->uploadFiles($files);
             DB::commit();
             return $obj;
         } catch (Exception $e) {
@@ -89,7 +90,7 @@ class Video extends Model
             $saved = parent::update($attributes, $options);
             Video::handleRelations($this, $attributes);
             if($saved){
-                Video::uploadFiles($files);
+                $this->uploadFiles($files);
             }
             DB::commit();
             if($saved && count($files)){
@@ -112,10 +113,35 @@ class Video extends Model
         return $this->belongsToMany('App\Models\Genre');
     }
 
+    public function getVideoFile()
+    {
+        return "{$this->fileDirectory()}/{$this->video_file}";
+    }
+
+    public function getThumbFile()
+    {
+        return "{$this->fileDirectory()}/{$this->thumb_file}";
+    }
+
+    public function getBannerFile()
+    {
+        return "{$this->fileDirectory()}/{$this->banner_file}";
+    }
+
+    public function getTrailerFile()
+    {
+        return "{$this->fileDirectory()}/{$this->trailer_file}";
+    }
+
     private static function handleRelations(Video $video, $attributes = [])
     {
         $video->categories()->sync($attributes['categories_id']);
         $video->genres()->sync($attributes['genres_id']);
         $video->refresh();
+    }
+
+    public static function modelResource()
+    {
+        return VideoResource::class;
     }
 }

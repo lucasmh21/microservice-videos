@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\api;
 
+use App\Http\Resources\CastMemberResource;
 use App\Models\CastMember;
 
 class CastMemberController extends AbstractBasicCrudController

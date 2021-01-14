@@ -22,7 +22,7 @@ class GenreUnitTest extends TestCase
     public function testCreate()
     {
         $response = $this->post(route('genres.store'),$this->createGenreFields());
-        $this->assertTrue(Uuid::isValid($response->decodeResponseJson('id')));
+        $this->assertTrue(Uuid::isValid($response->decodeResponseJson('data.id')));
         $response->assertStatus(201);
     }
     public function testUpdate()

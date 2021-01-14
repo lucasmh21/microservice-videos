@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Storage;
 trait UploadFilesTrait
 {
 
-    protected abstract static function storeDir();
+    protected abstract function storeDir();
     protected abstract static function fileAttributes();
 
     public static function bootUploadFilesTrait()
@@ -27,15 +27,15 @@ trait UploadFilesTrait
         });
     }
 
-    protected static function uploadFile(UploadedFile $file)
+    protected function uploadFile(UploadedFile $file)
     {
-        $file->store(self::storeDir());
+        $file->store($this->storeDir());
     }
 
-    protected static function uploadFiles(array $files)
+    protected function uploadFiles(array $files)
     {
         foreach ($files as $file) {
-            self::uploadFile($file);
+            $this->uploadFile($file);
         }
     }
 
@@ -48,7 +48,7 @@ trait UploadFilesTrait
     protected function deleteFile($file)
     {
         $fileName = $file instanceof UploadedFile ? $file->hashName():$file;
-        $path = self::storeDir().'/'.$fileName;
+        $path = $this->storeDir().'/'.$fileName;
         Storage::delete($path);
     }
 
@@ -74,5 +74,10 @@ trait UploadFilesTrait
             }
         }
         return $result;
+    }
+
+    protected function fileDirectory()
+    {
+        return Storage::url($this->storeDir());
     }
 }

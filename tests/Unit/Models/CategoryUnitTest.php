@@ -22,7 +22,7 @@ class CategoryUnitTest extends TestCase
     public function testCreateCategory()
     {
         $response = $this->post(route('categories.store'), $this->createFieldsCategory());
-        $this->assertTrue(Uuid::isValid($response->decodeResponseJson('id')));
+        $this->assertTrue(Uuid::isValid($response->decodeResponseJson('data.id')));
         $response->assertStatus(201);
     }
     public function testUpdateCategory()

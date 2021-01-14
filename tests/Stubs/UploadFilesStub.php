@@ -23,8 +23,8 @@ class UploadFilesStub extends Model
     public static function create($attributes = [])
     {
         $files = self::extractFiles($attributes);
-        self::uploadFiles($files);
         $obj = new UploadFilesStub($attributes);
+        $obj->uploadFiles($files);
         return $obj;
     }
 

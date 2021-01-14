@@ -3,28 +3,33 @@
 namespace App\Http\Controllers\api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\CategoryResource;
+use App\Traits\ModelResourceTrait;
 use Illuminate\Http\Request;
 
 abstract class AbstractBasicCrudController extends Controller
 {
+
+    use ModelResourceTrait;
+
     protected abstract function model();
     protected abstract function rulesStore();
     protected abstract function rulesUpdate(string $id);
 
     public function index()
     {
-       return $this->model()::all();
+        return $this->getCollection($this->model()::modelResource(), $this->model()::all());
     }
 
     public function store(Request $request)
     {
         $validData = $request->validate($this->rulesStore());
-        return $this->model()::create($validData);
+        return $this->getResource($this->model()::modelResource(), $this->model()::create($validData));
     }
 
     public function show($id)
     {
-        return $this->findOrFail($id);
+        return $this->getResource($this->model()::modelResource(), $this->findOrFail($id));
     }
 
     public function update(Request $request, $id)
@@ -32,7 +37,7 @@ abstract class AbstractBasicCrudController extends Controller
         $object = $this->findOrFail($id);
         $validData = $request->validate($this->rulesUpdate($id));
         $object->update($validData);
-        return $object;
+        return $this->getResource($this->model()::modelResource(), $object);
     }
 
     public function destroy($id)

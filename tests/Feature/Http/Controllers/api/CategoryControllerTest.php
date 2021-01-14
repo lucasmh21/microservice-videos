@@ -55,7 +55,7 @@ class CategoryControllerTest extends TestCase
     public function testCreate()
     {
         $response = $this->assertCreate(['name' => 'Test']);
-        $this->assertTrue(Uuid::isValid($response->json('id')));
+        $this->assertTrue(Uuid::isValid($response->json('data.id')));
     }
 
     public function testUpdate()
