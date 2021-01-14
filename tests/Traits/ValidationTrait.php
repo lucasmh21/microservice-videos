@@ -10,6 +10,9 @@ use Tests\TestCase;
 
 trait ValidationTrait
 {
+
+    use ResourceTrait;
+
     abstract protected function model();
     abstract protected function routeStore();
     abstract protected function routeUpdate(array $parameters);
@@ -22,7 +25,8 @@ trait ValidationTrait
         $response = $this->getTestCase()->json('POST',$this->routeStore(), $data);
         $response->assertStatus(201);
         $this->assertRelationships($response, $data, $relationships);
-        $response->assertJson($data);
+        $jsonResource = $this->model()::modelResource();
+        $this->assertResource($response, new $jsonResource($this->model()::find($response->json('data.id'))));
         return $response;
     }
 
@@ -44,8 +48,8 @@ trait ValidationTrait
                $data[$key] = $value->hashName();
             }
         }
-
-        $response->assertJson($data);
+        $jsonResource = $this->model()::modelResource();
+        $this->assertResource($response, new $jsonResource($this->model()::find($response->json('data.id'))));
         return $response;
     }
 
@@ -62,7 +66,8 @@ trait ValidationTrait
     {
         $model = $this->createGenericModel();
         $response = $this->json('GET',$this->routeShow($model->toArray()));
-        $response->assertJson($model->toArray(), true);
+        $jsonResource = $this->model()::modelResource();
+        $this->assertResource($response, new $jsonResource($this->model()::find($response->json('data.id'))));
         return $response;
     }
 
@@ -178,7 +183,7 @@ trait ValidationTrait
 
     protected function assertRelationships(TestResponse $response, array &$data, array $relationships)
     {
-        $id = $response->json('id');
+        $id = $response->json('data.id');
         $model = $this->model()::find($id);
         $testCase = $this->getTestCase();
 
